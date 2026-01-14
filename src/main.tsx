@@ -6,12 +6,13 @@ import { appTheme } from './theme';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <ThemeProvider theme={appTheme}>
-      <CssBaseline />
-      <App />
-    </ThemeProvider>
-  </React.StrictMode>
+  // strict mode causes double useEffect calls in dev mode
+  // <React.StrictMode>
+  <ThemeProvider theme={appTheme}>
+    <CssBaseline />
+    <App />
+  </ThemeProvider>
+  // </React.StrictMode>
 );
 
 
