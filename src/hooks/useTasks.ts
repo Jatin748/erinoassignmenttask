@@ -19,6 +19,7 @@ interface UseTasksState {
   derivedSorted: DerivedTask[];
   metrics: Metrics;
   lastDeleted: Task | null;
+  clearLastDeleted: () => void;
   addTask: (task: Omit<Task, "id"> & { id?: string }) => void;
   updateTask: (id: string, patch: Partial<Task>) => void;
   deleteTask: (id: string) => void;
@@ -210,6 +211,11 @@ export function useTasks(): UseTasksState {
     setLastDeleted(null);
   }, [lastDeleted]);
 
+  // Additional function to clear lastDeleted
+  const clearLastDeleted = useCallback(() => {
+    setLastDeleted(null);
+  }, []);
+
   return {
     tasks,
     loading,
@@ -221,5 +227,6 @@ export function useTasks(): UseTasksState {
     updateTask,
     deleteTask,
     undoDelete,
+    clearLastDeleted,
   };
 }
