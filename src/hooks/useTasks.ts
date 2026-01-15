@@ -60,7 +60,9 @@ export function useTasks(): UseTasksState {
         // timeTaken: Number(t.timeTaken) > 0 ? Number(t.timeTaken) : 1,
         // BUG-5 Fix: allow timeTaken to be zero
         // When time  is zero the add task button is disabled in the UI, but now we allow zero timeTaken
-        timeTaken: Number(t.timeTaken) ?? 0,
+        timeTaken: Number.isFinite(Number(t.timeTaken))
+          ? Number(t.timeTaken)
+          : 0,
         priority: t.priority,
         status: t.status,
         notes: t.notes,
@@ -169,7 +171,7 @@ export function useTasks(): UseTasksState {
     setTasks((prev) => {
       const id = task.id ?? crypto.randomUUID();
       // const timeTaken = task.timeTaken <= 0 ? 1 : task.timeTaken; // auto-correct
-      const timeTaken = task.timeTaken;
+      const timeTaken = Number.isFinite(task.timeTaken) ? task.timeTaken : 0;
       const createdAt = new Date().toISOString();
       const status = task.status;
       const completedAt = status === "Done" ? createdAt : undefined;

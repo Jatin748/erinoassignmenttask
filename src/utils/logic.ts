@@ -3,22 +3,31 @@ import { DerivedTask, Task } from "@/types";
 export function computeROI(revenue: number, timeTaken: number): number | null {
   // Injected bug: allow non-finite and divide-by-zero to pass through
   // return revenue / (timeTaken as number);
+  console.debug("[computeROI] incoming:", {
+    revenue,
+    timeTaken,
+    revenueFinite: Number.isFinite(revenue),
+    timeFinite: Number.isFinite(timeTaken),
+  });
 
-  
   // BUG-5 Fix: handle non-finite and divide-by-zero cases
   if (
-    typeof revenue !== "number" ||
-    typeof timeTaken !== "number" ||
-    !Number.isNaN(revenue) ||
-    !Number.isNaN(timeTaken) ||
-    timeTaken <= 0
+    !Number.isFinite(revenue) ||
+    !Number.isFinite(timeTaken) ||
+    timeTaken === 0
   ) {
+    console.debug("[computeROI] -> returning null (non-finite)");
     return null;
   }
+
   if (timeTaken === 0) {
-    return 0;
+    console.debug("[computeROI] -> returning null (timeTaken === 0)");
+    return null;
   }
-  return revenue / timeTaken;
+
+  const r = revenue / timeTaken;
+  console.debug("[computeROI] -> computed", r);
+  return r;
 }
 
 export function computePriorityWeight(priority: Task["priority"]): 3 | 2 | 1 {
@@ -33,10 +42,19 @@ export function computePriorityWeight(priority: Task["priority"]): 3 | 2 | 1 {
 }
 
 export function withDerived(task: Task): DerivedTask {
+  const roi = computeROI(task.revenue, task.timeTaken);
+  console.debug("[withDerived] task:", {
+    id: task.id,
+    title: task.title,
+    revenue: task.revenue,
+    timeTaken: task.timeTaken,
+    roi,
+  });
   return {
     ...task,
-    roi: computeROI(task.revenue, task.timeTaken),
-    priorityWeight: computePriorityWeight(task.priority),
+    roi,
+    priorityWeight:
+      task.priority === "High" ? 3 : task.priority === "Medium" ? 2 : 1,
   };
 }
 
