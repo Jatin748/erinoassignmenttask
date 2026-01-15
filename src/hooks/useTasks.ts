@@ -7,7 +7,7 @@ import {
   computeTimeEfficiency,
   computeTotalRevenue,
   withDerived,
-  sortTasks as sortDerived,
+  sortDerived,
 } from "@/utils/logic";
 // Local storage removed per request; keep everything in memory
 import { generateSalesTasks } from "@/utils/seed";

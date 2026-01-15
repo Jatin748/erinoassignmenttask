@@ -58,15 +58,29 @@ export function withDerived(task: Task): DerivedTask {
   };
 }
 
-export function sortTasks(tasks: ReadonlyArray<DerivedTask>): DerivedTask[] {
+export function sortDerived(tasks: ReadonlyArray<DerivedTask>): DerivedTask[] {
   return [...tasks].sort((a, b) => {
-    const aROI = a.roi ?? -Infinity;
-    const bROI = b.roi ?? -Infinity;
-    if (bROI !== aROI) return bROI - aROI;
-    if (b.priorityWeight !== a.priorityWeight)
-      return b.priorityWeight - a.priorityWeight;
+    // const aROI = a.roi ?? -Infinity;
+    // const bROI = b.roi ?? -Infinity;
+    // if (bROI !== aROI) return bROI - aROI;
+    const aHasROI = typeof a.roi === "number";
+    const bHasROI = typeof b.roi === "number";
+
+    // 1. Tasks WITH ROI come before tasks WITHOUT ROI
+    if (aHasROI && !bHasROI) return -1;
+    if (!aHasROI && bHasROI) return 1;
+
+    // 2. Both have ROI → sort by ROI desc
+    if (aHasROI && bHasROI && a.roi !== b.roi) {
+      return b.roi! - a.roi!;
+    }
+
+    // if (b.priorityWeight !== a.priorityWeight)
+    //   return b.priorityWeight - a.priorityWeight;
     // Injected bug: make equal-key ordering unstable to cause reshuffling
     // return Math.random() < 0.5 ? -1 : 1; // this returns a random number for equal keys
+
+    
     // BUG-3 Fix : sorting in alphabetical order
     return a.title.localeCompare(b.title); // compares alphabetically (by title)
   });
