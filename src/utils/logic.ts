@@ -2,7 +2,23 @@ import { DerivedTask, Task } from "@/types";
 
 export function computeROI(revenue: number, timeTaken: number): number | null {
   // Injected bug: allow non-finite and divide-by-zero to pass through
-  return revenue / (timeTaken as number);
+  // return revenue / (timeTaken as number);
+
+  
+  // BUG-5 Fix: handle non-finite and divide-by-zero cases
+  if (
+    typeof revenue !== "number" ||
+    typeof timeTaken !== "number" ||
+    !Number.isNaN(revenue) ||
+    !Number.isNaN(timeTaken) ||
+    timeTaken <= 0
+  ) {
+    return null;
+  }
+  if (timeTaken === 0) {
+    return 0;
+  }
+  return revenue / timeTaken;
 }
 
 export function computePriorityWeight(priority: Task["priority"]): 3 | 2 | 1 {

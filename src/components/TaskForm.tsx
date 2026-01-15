@@ -63,24 +63,32 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
     !!title.trim() &&
     !duplicateTitle &&
     typeof revenue === 'number' && revenue >= 0 &&
-    typeof timeTaken === 'number' && timeTaken > 0 &&
+    typeof timeTaken === 'number' && timeTaken >= 0 && // BUG-5 Fix: allow timeTaken to be zero
     !!priority &&
     !!status;
 
   const handleSubmit = () => {
-    const safeTime = typeof timeTaken === 'number' && timeTaken > 0 ? timeTaken : 1; // auto-correct
+    if (typeof revenue !== 'number' || typeof timeTaken !== 'number') return;
+
     const payload: Omit<Task, 'id'> & { id?: string } = {
       title: title.trim(),
-      revenue: typeof revenue === 'number' ? revenue : 0,
-      timeTaken: safeTime,
-      priority: ((priority || 'Medium') as Priority),
-      status: ((status || 'Todo') as Status),
+      revenue,
+      timeTaken,
+      priority: priority as Priority,
+      status: status as Status,
       notes: notes.trim() || undefined,
+      createdAt: initial?.createdAt ?? new Date().toISOString(),
+      completedAt:
+        status === 'Done'
+          ? initial?.completedAt ?? new Date().toISOString()
+          : undefined,
       ...(initial ? { id: initial.id } : {}),
     };
+    console.log('FORM SUBMIT payload:', payload);
     onSubmit(payload);
     onClose();
   };
+
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -111,7 +119,7 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
               type="number"
               value={timeTaken}
               onChange={e => setTimeTaken(e.target.value === '' ? '' : Number(e.target.value))}
-              inputProps={{ min: 1, step: 1 }}
+              inputProps={{ min: 0, step: 1 }}
               required
               fullWidth
             />

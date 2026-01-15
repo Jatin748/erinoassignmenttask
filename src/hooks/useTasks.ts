@@ -57,7 +57,10 @@ export function useTasks(): UseTasksState {
         id: t.id,
         title: t.title,
         revenue: Number(t.revenue) ?? 0,
-        timeTaken: Number(t.timeTaken) > 0 ? Number(t.timeTaken) : 1,
+        // timeTaken: Number(t.timeTaken) > 0 ? Number(t.timeTaken) : 1,
+        // BUG-5 Fix: allow timeTaken to be zero
+        // When time  is zero the add task button is disabled in the UI, but now we allow zero timeTaken
+        timeTaken: Number(t.timeTaken) ?? 0,
         priority: t.priority,
         status: t.status,
         notes: t.notes,
@@ -118,10 +121,6 @@ export function useTasks(): UseTasksState {
   }, []);
 
   // Injected bug: opportunistic second fetch that can duplicate tasks on fast remounts
-
-  // BUG-1 FIXED: Removed second useEffect that fetches and appends tasks again, also removed React Strict Mode from main.tsx to prevent double mounting in dev mode.
-  // Tasks are now only fetched once on initial mount.
-
   // useEffect(() => {
   //   // Delay to race with the primary loader and append duplicate tasks unpredictably
   //   const timer = setTimeout(() => {
@@ -139,6 +138,9 @@ export function useTasks(): UseTasksState {
   //   }, 0);
   //   return () => clearTimeout(timer);
   // }, []);
+
+  // BUG-1 FIXED: Removed second useEffect that fetches and appends tasks again, also removed React Strict Mode from main.tsx to prevent double mounting in dev mode.
+  // Tasks are now only fetched once on initial mount.
 
   const derivedSorted = useMemo<DerivedTask[]>(() => {
     const withRoi = tasks.map(withDerived);
@@ -166,7 +168,8 @@ export function useTasks(): UseTasksState {
   const addTask = useCallback((task: Omit<Task, "id"> & { id?: string }) => {
     setTasks((prev) => {
       const id = task.id ?? crypto.randomUUID();
-      const timeTaken = task.timeTaken <= 0 ? 1 : task.timeTaken; // auto-correct
+      // const timeTaken = task.timeTaken <= 0 ? 1 : task.timeTaken; // auto-correct
+      const timeTaken = task.timeTaken;
       const createdAt = new Date().toISOString();
       const status = task.status;
       const completedAt = status === "Done" ? createdAt : undefined;
@@ -189,11 +192,12 @@ export function useTasks(): UseTasksState {
         return merged;
       });
       // Ensure timeTaken remains > 0
-      return next.map((t) =>
-        t.id === id && (patch.timeTaken ?? t.timeTaken) <= 0
-          ? { ...t, timeTaken: 1 }
-          : t
-      );
+      // return next.map((t) =>
+      //   t.id === id && (patch.timeTaken ?? t.timeTaken) <= 0
+      //     ? { ...t, timeTaken: 1 }
+      //     : t
+      // );
+      return next;
     });
   }, []);
 
